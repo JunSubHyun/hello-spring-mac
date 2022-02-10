@@ -1,26 +1,41 @@
 package hello.hellospring.repository;
 
 import hello.hellospring.domain.Member;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
+import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 public class JdbcTemplateMemberRepository implements MemberRepository{
 
+    private final JdbcTemplate jdbcTemplte;
+
+    private JdbcTemplateMemberRepository(DataSource dataSource){
+        jdbcTemplte = new JdbcTemplate(dataSource);
+    }
 
     //jdbc
     @Override
     public Member save(Member member) {
         return null;
+
     }
 
     @Override
     public Optional<Member> findById(Long id) {
-        return Optional.empty();
+        List<Member> result = jdbcTemplte.query("select * from member where id = ?",memberRowMapper(),id);
+        return result.stream().findAny();
     }
 
     @Override
     public Optional<Member> findByName(String name) {
+
         return Optional.empty();
     }
 
@@ -28,4 +43,14 @@ public class JdbcTemplateMemberRepository implements MemberRepository{
     public List<Member> findAll() {
         return null;
     }
+
+    private RowMapper<Member> memberRowMapper(){
+        return (rs, rowNum) -> {
+            Member member = new Member();
+            member.setId(rs.getLong("id"));
+            member.setName(rs.getString("name"));
+            return member;
+        };
+    }
+
 }
